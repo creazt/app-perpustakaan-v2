@@ -4,7 +4,7 @@
 
 @section('content')
 <h1>Laporan Peminjaman</h1>
-<p>Data diambil langsung dari <code>GET /api/loans</code>, bukan query database langsung.</p>
+<p></p>
 
 <table>
     <thead>
