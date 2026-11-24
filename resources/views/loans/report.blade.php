@@ -31,8 +31,8 @@
                 {{ $book['judul'] }}@if (!$loop->last), @endif
                 @endforeach
             </td>
-            <td>{{ $loan['tanggal_pinjam'] }}</td>
-            <td>{{ $loan['tanggal_kembali'] }}</td>
+            <td style="white-space: nowrap;">{{ \Carbon\Carbon::parse($loan['tanggal_pinjam'])->format('d-m-Y') }}</td>
+            <td style="white-space: nowrap;">{{ \Carbon\Carbon::parse($loan['tanggal_kembali'])->format('d-m-Y') }}</td>
             <td>{{ ucfirst($loan['status_tampil'] ?? $loan['status']) }}</td>
             <td>{{ ($loan['hari_terlambat'] ?? 0) > 0 ? $loan['hari_terlambat'] . ' hari' : '-' }}</td>
             <td>{{ ($loan['denda'] ?? 0) > 0 ? 'Rp ' . number_format($loan['denda'], 0, ',', '.') : '-' }}</td>

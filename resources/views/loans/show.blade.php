@@ -31,11 +31,26 @@
 
         .text-right {
             text-align: right;
+            white-space: nowrap;
+            /* angka rupiah tidak terpotong ke baris baru */
+        }
+
+        th.col-hari {
+            width: 110px;
+        }
+
+        th.col-denda {
+            width: 150px;
         }
 
         tfoot td {
             font-weight: bold;
             background: #f9fafb;
+        }
+
+        tfoot .total {
+            font-size: 1.15em;
+            color: #b91c1c;
         }
 
         .badge {
@@ -46,17 +61,25 @@
             font-weight: bold;
         }
 
-        .badge-success { background: #10b981; }
-        .badge-warning { background: #f59e0b; }
-        .badge-danger { background: #ef4444; }
+        .badge-success {
+            background: #10b981;
+        }
+
+        .badge-warning {
+            background: #f59e0b;
+        }
+
+        .badge-danger {
+            background: #ef4444;
+        }
     </style>
 </head>
 
 <body>
     @php
-        $statusTampil = $loan->statusTampil();
-        $rincian = $loan->rincianDenda();
-        $tarif = \App\Models\Loan::DENDA_PER_BUKU_PER_HARI;
+    $statusTampil = $loan->statusTampil();
+    $rincian = $loan->rincianDenda();
+    $tarif = \App\Models\Loan::DENDA_PER_BUKU_PER_HARI;
     @endphp
 
     <h1>Detail Peminjaman</h1>
@@ -73,15 +96,16 @@
         </tr>
         <tr>
             <th>Tanggal Pinjam</th>
-            <td>{{ $loan->tanggal_pinjam }}</td>
+            <td>{{ $loan->tanggal('tanggal_pinjam') }}</td>
         </tr>
         <tr>
             <th>Tanggal Kembali (batas)</th>
-            <td>{{ $loan->tanggal_kembali }}</td>
+            <td>{{ $loan->tanggal('tanggal_kembali') }}</td>
         </tr>
         <tr>
             <th>Tanggal Dikembalikan</th>
-            <td>{{ $loan->tanggal_dikembalikan ?? '-' }}</td>
+            <td>{{ $loan->tanggal('tanggal_dikembalikan') }}</td>
+            </td>
         </tr>
         <tr>
             <th>Status</th>

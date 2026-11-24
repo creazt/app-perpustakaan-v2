@@ -19,8 +19,13 @@ class Loan extends Model
     public const DENDA_PER_BUKU_PER_HARI = 1000;
 
     protected $fillable = [
-        'member_id', 'user_id', 'tanggal_pinjam', 'tanggal_kembali',
-        'tanggal_dikembalikan', 'status', 'denda',
+        'member_id',
+        'user_id',
+        'tanggal_pinjam',
+        'tanggal_kembali',
+        'tanggal_dikembalikan',
+        'status',
+        'denda',
     ];
 
     public function member(): BelongsTo
@@ -100,7 +105,13 @@ class Loan extends Model
 
     public function jumlahBuku(): int
     {
+
         return $this->loanItems->count();
+    }
+
+    public function tanggal(string $kolom): string
+    {
+        return $this->$kolom ? Carbon::parse($this->$kolom)->format('d-m-Y') : '-';
     }
 
     /**
@@ -139,7 +150,7 @@ class Loan extends Model
     {
         $hari = $this->hariTerlambat();
 
-        return $this->loanItems->map(fn ($item) => [
+        return $this->loanItems->map(fn($item) => [
             'judul' => $item->book?->judul ?? '(buku sudah dihapus)',
             'hari' => $hari,
             'tarif' => self::DENDA_PER_BUKU_PER_HARI,

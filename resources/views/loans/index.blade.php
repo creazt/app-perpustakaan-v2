@@ -23,9 +23,9 @@
 <form method="GET" action="{{ route('loans.index') }}" style="margin-bottom: 16px;">
     <select name="status" style="padding: 6px;">
         <option value="">Semua status</option>
-        <option value="dipinjam" @selected(request('status') === 'dipinjam')>Dipinjam</option>
-        <option value="terlambat" @selected(request('status') === 'terlambat')>Terlambat</option>
-        <option value="dikembalikan" @selected(request('status') === 'dikembalikan')>Dikembalikan</option>
+        <option value="dipinjam" @selected(request('status')==='dipinjam' )>Dipinjam</option>
+        <option value="terlambat" @selected(request('status')==='terlambat' )>Terlambat</option>
+        <option value="dikembalikan" @selected(request('status')==='dikembalikan' )>Dikembalikan</option>
     </select>
     <label>Tgl pinjam dari
         <input type="date" name="dari" value="{{ request('dari') }}" style="padding: 5px;">
@@ -62,29 +62,29 @@
             <td>{{ $loan->user->name }}</td>
             <td>
                 @foreach ($loan->loanItems as $item)
-                    {{ $item->book->judul }}@if (!$loop->last), @endif
+                {{ $item->book->judul }}@if (!$loop->last), @endif
                 @endforeach
             </td>
-            <td>{{ $loan->tanggal_pinjam }}</td>
-            <td>{{ $loan->tanggal_kembali }}</td>
+            <td style="white-space: nowrap;">{{ $loan->tanggal('tanggal_pinjam') }}</td>
+            <td style="white-space: nowrap;">{{ $loan->tanggal('tanggal_kembali') }}</td>
             <td>
                 @if($statusTampil === 'dikembalikan')
-                    <span style="color: green; font-weight: bold;">Dikembalikan</span>
+                <span style="color: green; font-weight: bold;">Dikembalikan</span>
                 @elseif($statusTampil === 'terlambat')
-                    <span style="color: red; font-weight: bold;">Terlambat</span>
-                    <br><small>{{ $loan->hariTerlambat() }} hari</small>
+                <span style="color: red; font-weight: bold;">Terlambat</span>
+                <br><small>{{ $loan->hariTerlambat() }} hari</small>
                 @else
-                    <span style="color: orange; font-weight: bold;">Dipinjam</span>
+                <span style="color: orange; font-weight: bold;">Dipinjam</span>
                 @endif
             </td>
             <td>
                 @if($statusTampil === 'dikembalikan')
-                    {{ $loan->denda > 0 ? 'Rp ' . number_format($loan->denda, 0, ',', '.') : '-' }}
+                {{ $loan->denda > 0 ? 'Rp ' . number_format($loan->denda, 0, ',', '.') : '-' }}
                 @elseif($statusTampil === 'terlambat')
-                    <span style="color: red;">Rp {{ number_format($loan->dendaSaatIni(), 0, ',', '.') }}</span>
-                    <br><small>berjalan</small>
+                <span style="color: red;">Rp {{ number_format($loan->dendaSaatIni(), 0, ',', '.') }}</span>
+                <br><small>berjalan</small>
                 @else
-                    -
+                -
                 @endif
             </td>
             <td>
