@@ -21,5 +21,44 @@
         </div>
     </div>
 
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="value" style="color: #b91c1c;">{{ $stats['jumlah_terlambat'] }}</div>
+            <div class="label">Peminjaman Terlambat</div>
+        </div>
+        <div class="stat-card">
+            <div class="value" style="color: #b91c1c;">Rp {{ number_format($stats['total_denda'], 0, ',', '.') }}</div>
+            <div class="label">Total Denda</div>
+            <div class="label" style="font-size: 12px;">
+                Tercatat Rp {{ number_format($stats['denda_tercatat'], 0, ',', '.') }}
+                + berjalan Rp {{ number_format($stats['denda_berjalan'], 0, ',', '.') }}
+            </div>
+        </div>
+    </div>
+
+    <h2 style="margin-top: 30px;">Buku Terpopuler</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>Judul</th>
+                <th>Dipinjam (kali)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse ($stats['buku_terpopuler'] as $i => $buku)
+            <tr>
+                <td>{{ $i + 1 }}</td>
+                <td>{{ $buku['judul'] }}</td>
+                <td>{{ $buku['dipinjam'] }}</td>
+            </tr>
+            @empty
+            <tr>
+                <td colspan="3">Belum ada data peminjaman.</td>
+            </tr>
+            @endforelse
+        </tbody>
+    </table>
+
     <p style="margin-top: 24px;"><a href="{{ route('loans.report') }}" class="btn">Lihat Laporan Peminjaman</a></p>
 @endsection

@@ -30,7 +30,7 @@ class LoanController extends Controller
             'tanggal_pinjam' => 'required|date',
             'tanggal_kembali' => 'required|date|after_or_equal:tanggal_pinjam',
             'book_ids' => 'required|array|min:1',
-            'book_ids.*' => 'integer|exists:books,id',
+            'book_ids.*' => 'integer|distinct|exists:books,id',
         ], [
             'member_id.required' => 'Anggota wajib dipilih.',
             'user_id.required' => 'Petugas (user_id) wajib diisi.',
@@ -41,32 +41,20 @@ class LoanController extends Controller
             'book_ids.required' => 'Pilih minimal satu buku.',
         ]);
 
-        $loan = Loan::create([
-            'member_id' => $validated['member_id'],
-            'user_id' => $validated['user_id'],
-            'tanggal_pinjam' => $validated['tanggal_pinjam'],
-            'tanggal_kembali' => $validated['tanggal_kembali'],
-        ]);
-
-        foreach ($validated['book_ids'] as $bookId) {
-            $loan->loanItems()->create(['book_id' => $bookId]);
-        }
+        $loan = Loan::buat($validated);
         $loan->refresh()->load(['member', 'user', 'loanItems.book']);
 
         return (new LoanResource($loan))->response()->setStatusCode(201);
     }
 
     /**
-     * Mengubah status peminjaman menjadi dikembalikan
+     * Mengubah status peminjaman menjadi dikembalikan (hitung denda + tambah stok)
      */
     public function kembalikan(string $id)
     {
-        $loan = Loan::with(['member', 'user', 'loanItems.book'])->findOrFail($id);
-
-        $loan->update([
-            'status' => 'dikembalikan',
-            'tanggal_dikembalikan' => now()->toDateString(),
-        ]);
+        $loan = Loan::findOrFail($id);
+        $loan->kembalikan();
+        $loan->load(['member', 'user', 'loanItems.book']);
 
         return new LoanResource($loan);
     }

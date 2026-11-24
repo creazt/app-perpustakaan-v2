@@ -4,7 +4,7 @@
 
 @section('content')
 <h1>Laporan Peminjaman</h1>
-<p></p>
+<p>Data diambil langsung dari <code>GET /api/loans</code>, bukan query database langsung.</p>
 
 <table>
     <thead>
@@ -16,6 +16,8 @@
             <th>Tgl Pinjam</th>
             <th>Tgl Kembali</th>
             <th>Status</th>
+            <th>Terlambat</th>
+            <th>Denda</th>
         </tr>
     </thead>
     <tbody>
@@ -31,11 +33,13 @@
             </td>
             <td>{{ $loan['tanggal_pinjam'] }}</td>
             <td>{{ $loan['tanggal_kembali'] }}</td>
-            <td>{{ ucfirst($loan['status']) }}</td>
+            <td>{{ ucfirst($loan['status_tampil'] ?? $loan['status']) }}</td>
+            <td>{{ ($loan['hari_terlambat'] ?? 0) > 0 ? $loan['hari_terlambat'] . ' hari' : '-' }}</td>
+            <td>{{ ($loan['denda'] ?? 0) > 0 ? 'Rp ' . number_format($loan['denda'], 0, ',', '.') : '-' }}</td>
         </tr>
         @empty
         <tr>
-            <td colspan="7">Belum ada data peminjaman.</td>
+            <td colspan="9">Belum ada data peminjaman.</td>
         </tr>
         @endforelse
     </tbody>

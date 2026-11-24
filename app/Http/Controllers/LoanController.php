@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Book;
 use App\Models\Loan;
-use App\Models\LoanItem;
 use App\Models\Member;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,15 +12,29 @@ use Illuminate\Support\Facades\Http;
 
 class LoanController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $loans = Loan::with(['member', 'user', 'loanItems.book'])->paginate(10);
+        $filter = $request->validate([
+            'status' => 'nullable|in:dipinjam,terlambat,dikembalikan',
+            'dari' => 'nullable|date',
+            'sampai' => 'nullable|date|after_or_equal:dari',
+        ], [
+            'sampai.after_or_equal' => 'Tanggal "sampai" tidak boleh sebelum tanggal "dari".',
+        ]);
+
+        $loans = Loan::with(['member', 'user', 'loanItems.book'])
+            ->filter($filter)
+            ->latest('id')
+            ->paginate(10)
+            ->withQueryString(); // supaya filter tidak hilang saat pindah halaman
+
         return view('loans.index', compact('loans'));
     }
 
     public function create()
     {
-        $members = Member::all();
+        // Hanya anggota aktif yang boleh meminjam
+        $members = Member::where('status', 'aktif')->get();
         $books = Book::all();
 
         return view('loans.create', compact('members', 'books'));
@@ -34,22 +47,11 @@ class LoanController extends Controller
             'tanggal_pinjam' => 'required|date',
             'tanggal_kembali' => 'required|date|after_or_equal:tanggal_pinjam',
             'book_ids' => 'required|array|min:1',
-            'book_ids.*' => 'integer|exists:books,id',
+            'book_ids.*' => 'integer|distinct|exists:books,id',
         ]);
 
-        $loan = Loan::create([
-            'member_id' => $validated['member_id'],
-            'user_id' => Auth::id(),
-            'tanggal_pinjam' => $validated['tanggal_pinjam'],
-            'tanggal_kembali' => $validated['tanggal_kembali'],
-            'status' => 'dipinjam',
-        ]);
-        foreach ($validated['book_ids'] as $bookId) {
-            LoanItem::create([
-                'loan_id' => $loan->id,
-                'book_id' => $bookId,
-            ]);
-        }
+        // Aturan batas pinjam, stok, dan status anggota ada di Loan::buat()
+        Loan::buat($validated + ['user_id' => Auth::id()]);
 
         return redirect()->route('loans.index')
             ->with('success', 'Data peminjaman berhasil ditambahkan.');
@@ -99,13 +101,14 @@ class LoanController extends Controller
     {
         $loan = Loan::findOrFail($id);
 
-        $loan->update([
-            'status' => 'dikembalikan',
-            'tanggal_dikembalikan' => now()->toDateString(),
-        ]);
+        // Isi tanggal dikembalikan, simpan denda, dan tambah stok
+        $loan->kembalikan();
 
-        return redirect()->route('loans.index')
-            ->with('success', 'Buku berhasil dikembalikan.');
+        $pesan = $loan->denda > 0
+            ? 'Buku berhasil dikembalikan. Denda keterlambatan: Rp ' . number_format($loan->denda, 0, ',', '.')
+            : 'Buku berhasil dikembalikan tepat waktu. Tidak ada denda.';
+
+        return redirect()->route('loans.index')->with('success', $pesan);
     }
 
     public function report(Request $request)
